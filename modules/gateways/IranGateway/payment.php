@@ -35,6 +35,8 @@ if(!$modules['type']) die('Module Not Activated');
 $invoice_id    = $_REQUEST['invoiceid'];
 $amount_rial   = intval($_REQUEST['amount']);
 $amount        = $amount_rial / $modules['cb_gw_unit'];
+$callback_URL  = $CONFIG['SystemURL']."/modules/gateways/$cb_gw_name/payment.php?a=callback&invoiceid=". $invoice_id.'&amount='.$amount;
+$invoice_URL  = $CONFIG['SystemURL']."/viewinvoice.php?id=".$invoice_id;
 
 /**
  * Telegram Notify
@@ -68,7 +70,7 @@ function notifyEmail($notify) {
     $headers = "MIME-Version: 1.0" . "\r\n";
     $headers .= "Content-type:text/plain;charset=UTF-8" . "\r\n";
     $headers .= "From: ".$modules['cb_email_from']."\r\n";
-    if($receivers)  foreach ($receivers as $receiver)
+    if($receivers) foreach ($receivers as $receiver)
         $cb_output['mail'][] = mail($receiver, $notify['title'], $notify['text'], $headers);
 }
 
@@ -81,6 +83,7 @@ function payment_failed($log)
     global $modules;
     global $cb_gw_name;
     $log['status'] = "unpaid";
+    $cb_output['payment_failed']=$log;
     logTransaction($modules["name"], $log, "ناموفق");
     if($modules['cb_email_on_error'] || $modules['cb_telegram_on_error']){
         $notify['title'] = $cb_gw_name . ' | ' . "تراکنش ناموفق";
@@ -101,6 +104,7 @@ function payment_success($log)
     global $modules;
     global $cb_gw_name;
     $log['status'] = "OK";
+    $cb_output['payment_success']=$log;
     logTransaction($modules["name"], $log, "موفق");
     if($modules['cb_email_on_success'] || $modules['cb_telegram_on_success']){
         $notify['title'] = $cb_gw_name . ' | ' . "تراکنش موفق";
@@ -127,8 +131,8 @@ function redirect($url)
 
 if($action==='callback') {
 
+    redirect($invoice_URL);
 }
 elseif ($action==='send'){
 
 }
-
