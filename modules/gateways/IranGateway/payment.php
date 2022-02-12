@@ -125,3 +125,10 @@ function redirect($url)
     exit;
 }
 
+if($action==='callback') {
+
+}
+elseif ($action==='send'){
+
+}
+
