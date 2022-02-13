@@ -23,7 +23,7 @@
 function IranGateway_MetaData()
 {
     return [
-        "DisplayName"                   => "IranGateway",
+        "DisplayName"                   => "IranSamanBank",
         "gatewayType"                   => "Bank",
         "failedEmail"                   => "Custom Payment_Failed",
         "successEmail"                  => "Custom Payment_Success",
