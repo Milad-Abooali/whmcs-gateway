@@ -35,8 +35,8 @@ if(!$modules['type']) die('Module Not Activated');
 $invoice_id    = $_REQUEST['invoiceid'];
 $amount_rial   = intval($_REQUEST['amount']);
 $amount        = $amount_rial / $modules['cb_gw_unit'];
-$callback_URL  = $CONFIG['SystemURL']."/modules/gateways/$cb_gw_name/payment.php?a=callback&invoiceid=". $invoice_id.'&amount='.$amount;
-$invoice_URL  = $CONFIG['SystemURL']."/viewinvoice.php?id=".$invoice_id;
+$callback_URL  = $CONFIG['SystemURL']."/modules/gateways/$cb_gw_name/payment.php?a=callback&invoiceid=". $invoice_id.'&amount='.$amount_rial;
+$invoice_URL   = $CONFIG['SystemURL']."/viewinvoice.php?id=".$invoice_id;
 
 /**
  * Telegram Notify
@@ -82,6 +82,7 @@ function payment_failed($log)
 {
     global $modules;
     global $cb_gw_name;
+    global $cb_output;
     $log['status'] = "unpaid";
     $cb_output['payment_failed']=$log;
     logTransaction($modules["name"], $log, "ناموفق");
@@ -103,6 +104,7 @@ function payment_success($log)
 {
     global $modules;
     global $cb_gw_name;
+    global $cb_output;
     $log['status'] = "OK";
     $cb_output['payment_success']=$log;
     logTransaction($modules["name"], $log, "موفق");
@@ -129,8 +131,34 @@ function redirect($url)
     exit;
 }
 
+/**
+ * Show Error
+ * @param $text
+ */
+function show_error($text)
+{
+    global $cb_gw_name;
+    global $invoice_URL;
+    echo "<img src='/modules/gateways/$cb_gw_name/logo.png' alt='$cb_gw_name'>
+        <p>$text</p><a href='$invoice_URL'>بازگشت</a>";
+}
+
+/**
+ * Get DB Amount
+ * @return float
+ */
+function get_db_amount(){
+    global $modules;
+    global $invoice_id;
+    $sql = select_query("tblinvoices", "", array("id" => $invoice_id));
+    $sql_res = mysql_fetch_array($sql);
+    $db_amount = strtok($sql_res['total'], '.');
+    return $db_amount * $modules['cb_gw_unit'];
+}
+
 if($action==='callback') {
 
+    // print("<pre>".print_r($cb_output,true)."</pre>");
     redirect($invoice_URL);
 }
 elseif ($action==='send'){
